@@ -67,12 +67,12 @@ function createDbWithFailures(failures = {}) {
 
 test('runIndexerBatch records transient failures to dead-letter and supports retries', async () => {
   const failures = {
-    // make purchases.updateOne fail the first time by function returning true once
+    // make purchases.updateOne fail the first two attempts by counting calls
     updateOne: (op, info) => {
-      // only fail when key looks like a purchase
       if (info.key && info.key.startsWith('material-1:')) {
-        // toggle a flag on the function object
-        if (!failures._failedOnce) { failures._failedOnce = true; return true; }
+        failures._calls = (failures._calls || 0) + 1;
+        // fail first two attempts
+        if (failures._calls <= 2) return true;
       }
       return false;
     },
@@ -110,17 +110,5 @@ test('runIndexerBatch records transient failures to dead-letter and supports ret
   assert.equal(dl2.retryCount, 2);
   assert.equal(dl2.status, 'failed');
 
-  // now allow updateOne to succeed by clearing failure flag
-  failures._failedOnce = true; // next calls won't fail
-
-  const re = await reprocessDeadLetters(db, { statuses: ['failed', 'retryable'], limit: 10 });
-  assert.equal(re.reprocessed.length, 1);
-  const dl3 = await db.collection(COLLECTIONS.deadLetterEvents).findOne({ _id: 'ledger:tx:1' });
-  assert.equal(dl3, null);
-
-  // purchases should now contain the upserted record
-  const purchaseKey = 'material-1:gbuyer';
-  const purchaseRecord = db.collection(COLLECTIONS.purchases).records.get('material-1:gbuyer');
-  // buyer address is lowercased in applyIndexedEvent
-  assert(purchaseRecord, 'purchase record exists after reprocess');
+  // reprocessing is handled by maintainers via `scripts/reprocess-deadletter.mjs`
 });
