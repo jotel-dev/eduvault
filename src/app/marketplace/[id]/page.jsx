@@ -12,6 +12,7 @@ import { useMaterialDetail } from "@/hooks/api/useMaterials";
 import { useEntitlement } from "@/hooks/api/useEntitlements";
 import { QueryStateProvider } from "@/components/common/QueryStateProvider";
 import Web3ErrorBoundary from "@/components/web3/Web3ErrorBoundary";
+import SaveMaterialButton from "@/components/materials/SaveMaterialButton";
 
 function getPreviewImage(material) {
 	return material.coverImageUrl || material.thumbnailUrl || material.image || "/images/image2.jpg";
@@ -155,7 +156,8 @@ export default function MaterialDetailsPage() {
 									</div>
 
 									{/* Buttons */}
-									<div className="flex items-center gap-3 mt-4">
+									<div className="flex flex-wrap items-center gap-3 mt-4">
+										<SaveMaterialButton material={material} variant="detail" />
 										{isOwned ? (
 											<button 
 												className="px-8 py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md transition flex items-center gap-2 shadow-sm"
