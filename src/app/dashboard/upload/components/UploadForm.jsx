@@ -43,10 +43,23 @@ export default function UploadForm() {
 
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const handleDocChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          file: `File size ${(file.size / (1024 * 1024)).toFixed(2)}MB exceeds the 10MB limit.`,
+        }));
+        return;
+      }
+      setFieldErrors((prev) => {
+        const next = { ...prev };
+        delete next.file;
+        return next;
+      });
       setDocFile(file);
       setDocFileName(file.name);
     }
@@ -65,22 +78,35 @@ export default function UploadForm() {
     e.preventDefault();
     setError(null);
     setSuccess(null);
+    setFieldErrors({});
+
+    const errors = {};
+
+    if (!title.trim()) {
+      errors.title = "Title is required.";
+    }
+    if (!docFile) {
+      errors.file = "Please upload a document file.";
+    }
+    if (price && (isNaN(Number(price)) || Number(price) < 0)) {
+      errors.price = "Price must be a positive number or 0.";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      failTransaction(new Error(Object.values(errors).join(" ")), {
+        title: "Validation failed",
+        message: "Please fix the highlighted fields before submitting.",
+        retryable: false,
+      });
+      return;
+    }
 
     beginTransaction({
       scope: "publish",
       title: "Publishing material",
       message: "Preparing your material for upload and wallet approval.",
     });
-
-    if (!title || !docFile) {
-      setError("Title and document file are required.");
-      failTransaction(new Error("Title and document file are required."), {
-        title: "Missing required fields",
-        message: "Add a title and upload a document before publishing.",
-        retryable: false,
-      });
-      return;
-    }
 
     if (!address) {
       setError("Please connect your wallet to upload a material.");
@@ -193,8 +219,13 @@ export default function UploadForm() {
           onChange={(e) => setTitle(e.target.value)}
           placeholder="e.g. ECO 304 - Development Economics Lecture Notes"
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-500"
+          maxLength={160}
           required
+          aria-describedby={fieldErrors.title ? "title-error" : undefined}
         />
+        {fieldErrors.title && (
+          <p id="title-error" className="text-red-600 text-xs mt-1">{fieldErrors.title}</p>
+        )}
       </div>
 
       <div className="mb-5">
@@ -204,8 +235,13 @@ export default function UploadForm() {
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Comprehensive lecture notes covering key development theories and examples."
           rows={3}
+          maxLength={5000}
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm resize-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500"
+          aria-describedby={fieldErrors.description ? "description-error" : undefined}
         />
+        {fieldErrors.description && (
+          <p id="description-error" className="text-red-600 text-xs mt-1">{fieldErrors.description}</p>
+        )}
       </div>
 
       <div className="mb-5">
@@ -273,13 +309,18 @@ export default function UploadForm() {
 
       <div className="mb-5">
         <label className="block text-sm font-medium mb-2">Upload Your File</label>
+        <p className="text-xs text-gray-500 mb-2">
+          Max file size: 10MB. Accepted types: PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, TXT, ZIP.
+        </p>
         <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition">
           <input
             type="file"
             id="file-upload"
             className="hidden"
             onChange={handleDocChange}
-            accept=".pdf,.doc,.docx,.ppt,.pptx,.zip"
+            accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.zip"
+            aria-label="Upload document file"
+            aria-describedby={fieldErrors.file ? "file-error" : undefined}
           />
           <label
             htmlFor="file-upload"
@@ -305,6 +346,9 @@ export default function UploadForm() {
             </div>
           </label>
         </div>
+        {fieldErrors.file && (
+          <p id="file-error" className="text-red-600 text-xs mt-1">{fieldErrors.file}</p>
+        )}
       </div>
 
       <div className="grid sm:grid-cols-2 gap-4 mb-5">
@@ -315,8 +359,14 @@ export default function UploadForm() {
             value={price}
             onChange={(e) => setPrice(e.target.value)}
             placeholder="amount"
+            min="0"
+            step="0.01"
             className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-500"
+            aria-describedby={fieldErrors.price ? "price-error" : undefined}
           />
+          {fieldErrors.price && (
+            <p id="price-error" className="text-red-600 text-xs mt-1">{fieldErrors.price}</p>
+          )}
         </div>
         <div>
           <label className="block text-sm font-medium mb-2">Usage Rights</label>

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { auditLog } from '@/lib/api/audit'
 import { withApiHardening } from '@/lib/api/hardening'
-import { normalizeStringList, sanitizeObject } from '@/lib/api/validation'
+import { normalizeStringList, sanitizeObject, validateUploadPayload, validateUploadFileMetadata } from '@/lib/api/validation'
 import { pinata } from '@/lib/pinata'
 
 export const dynamic = 'force-dynamic'
@@ -120,6 +120,48 @@ export async function POST(request) {
               { status: 415 }
             )
           }
+        }
+
+        // 3.5️⃣ Validate file metadata with structured validation
+        try {
+          validateUploadFileMetadata(file, "file")
+        } catch (validationErr) {
+          auditLog({
+            event: "upload_failed",
+            route: "upload",
+            method: "POST",
+            status: 400,
+            reason: validationErr.message,
+          })
+          return NextResponse.json(
+            { error: validationErr.message },
+            { status: 400 }
+          )
+        }
+
+        // 3.6️⃣ Validate upload metadata fields
+        const metadataPayload = {
+          title: form.get("title") || form.get("name"),
+          description: form.get("description"),
+          price: form.get("price"),
+          usageRights: form.get("usageRights"),
+          visibility: form.get("visibility"),
+        }
+
+        try {
+          validateUploadPayload(metadataPayload)
+        } catch (validationErr) {
+          auditLog({
+            event: "upload_failed",
+            route: "upload",
+            method: "POST",
+            status: 400,
+            reason: validationErr.message,
+          })
+          return NextResponse.json(
+            { error: validationErr.message },
+            { status: 400 }
+          )
         }
 
         const results = {}

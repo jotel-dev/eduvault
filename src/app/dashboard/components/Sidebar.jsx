@@ -14,12 +14,14 @@ import {
 	FaBoxOpen,
 	FaFileUpload,
 	FaWallet,
+	FaRocket,
 } from "react-icons/fa";
 
 export default function Sidebar() {
 	const pathname = usePathname();
 
 	const menuItems = [
+		{ icon: <FaRocket />, label: "Onboarding", href: "/onboarding" },
 		{ icon: <FaTachometerAlt />, label: "Dashboard", href: "/dashboard" },
 		{ icon: <FaShoppingBag />, label: "Market", href: "/dashboard/market" },
 		{ icon: <FaUpload />, label: "Upload Material", href: "/dashboard/upload" },
@@ -51,7 +53,7 @@ export default function Sidebar() {
 			<div className="text-2xl font-bold mb-8">EduVault</div>
 
 			{/* Main Menu */}
-			<nav className="space-y-1 mb-8">
+			<nav className="space-y-1 mb-8" aria-label="Dashboard navigation">
 				{menuItems.map((item, i) => (
 					<Link
 						key={i}
@@ -73,7 +75,7 @@ export default function Sidebar() {
 				<h3 className="text-sm font-semibold text-muted-foreground mb-3 px-4">
 					PROFILE
 				</h3>
-				<nav className="space-y-1">
+				<nav className="space-y-1" aria-label="Profile navigation">
 					{profileItems.map((item, i) => (
 						<Link
 							key={i}

@@ -247,7 +247,7 @@ export default function MarketPage() {
 
 			<section className="flex flex-col lg:flex-row min-h-screen bg-[#fffaf6]">
 				{/* Mobile Subjects */}
-				<div className="lg:hidden w-full overflow-x-auto bg-white border-b border-gray-200 px-4 py-3 hide-scrollbar flex gap-2">
+				<nav aria-label="Subject filters" className="lg:hidden w-full overflow-x-auto bg-white border-b border-gray-200 px-4 py-3 hide-scrollbar flex gap-2">
 					{subjectsLoading ? (
 						<div className="px-4 py-1.5 text-sm text-gray-500">
 							Loading subjects...
@@ -260,7 +260,9 @@ export default function MarketPage() {
 									setActiveSubject(subject);
 									setCurrentPage(1);
 								}}
-								className={`whitespace-nowrap px-4 py-1.5 rounded-full text-sm transition-all ${
+								role="tab"
+								aria-selected={activeSubject === subject}
+								className={`whitespace-nowrap px-4 py-1.5 rounded-full text-sm transition-all focus-visible:ring-2 focus-visible:ring-blue-500 ${
 									activeSubject === subject
 										? "bg-blue-600 text-white font-medium shadow-sm"
 										: "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -270,30 +272,33 @@ export default function MarketPage() {
 							</button>
 						))
 					)}
-				</div>
+				</nav>
 
 				{/* Sidebar */}
 				<aside className="hidden lg:block w-72 bg-white border-r border-gray-200 px-6 py-10 sticky top-0 h-screen overflow-y-auto">
+					<nav aria-label="Subject filters">
 					<h3 className="text-sm font-bold text-gray-900 mb-6 uppercase tracking-wider">
 						Subjects
 					</h3>
 
-					<ul className="space-y-1">
+					<ul role="list" className="space-y-1">
 						{subjectsLoading ? (
-							<li>
+							<li role="listitem">
 								<div className="px-3 py-2 text-sm text-gray-500">
 									Loading subjects...
 								</div>
 							</li>
 						) : (
 							subjects.map((subject) => (
-								<li key={subject}>
+								<li key={subject} role="listitem">
 									<button
 										onClick={() => {
 											setActiveSubject(subject);
 											setCurrentPage(1);
 										}}
-										className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
+										role="tab"
+										aria-selected={activeSubject === subject}
+										className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all focus-visible:ring-2 focus-visible:ring-blue-500 ${
 											activeSubject === subject
 												? "bg-blue-50 text-blue-700 font-semibold"
 												: "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
@@ -305,6 +310,7 @@ export default function MarketPage() {
 							))
 						)}
 					</ul>
+					</nav>
 				</aside>
 
 				{/* Main */}
@@ -325,9 +331,9 @@ export default function MarketPage() {
 							and author.
 						</p>
 
-						<button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all shadow-sm">
-							Share Your Notes
-						</button>
+							<button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all shadow-sm focus-visible:ring-2 focus-visible:ring-blue-500">
+								Share Your Notes
+							</button>
 					</motion.div>
 
 					{/* Recently Viewed */}
@@ -338,15 +344,16 @@ export default function MarketPage() {
 						<div className="relative w-full md:max-w-md">
 							<FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
 
-							<input
-								type="text"
-								placeholder="Search materials..."
-								value={searchQuery}
+								<input
+									type="text"
+									placeholder="Search materials..."
+									aria-label="Search materials"
+									value={searchQuery}
 								onChange={(e) => {
 									setSearchQuery(e.target.value);
 									setCurrentPage(1);
 								}}
-								className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm"
+								className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus-visible:ring-2 focus-visible:ring-blue-500"
 							/>
 						</div>
 
@@ -354,16 +361,17 @@ export default function MarketPage() {
 							<div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
 								<FaFilter className="text-gray-400 mr-2 text-xs" />
 
-								<select
-									value={activeSubject}
-									onChange={(e) => {
-										setActiveSubject(
-											e.target.value
-										);
+										<select
+											value={activeSubject}
+											onChange={(e) => {
+												setActiveSubject(
+													e.target.value
+												);
 
-										setCurrentPage(1);
-									}}
-									className="bg-transparent text-sm"
+												setCurrentPage(1);
+											}}
+											aria-label="Filter by subject"
+											className="bg-transparent text-sm focus-visible:ring-2 focus-visible:ring-blue-500"
 								>
 									<option value="All">
 										All Subjects
@@ -387,14 +395,15 @@ export default function MarketPage() {
 									Sort:
 								</span>
 
-								<select
-									value={sortBy}
-									onChange={(e) =>
-										setSortBy(
-											e.target.value
-										)
-									}
-									className="bg-transparent text-sm"
+										<select
+											value={sortBy}
+											onChange={(e) =>
+												setSortBy(
+													e.target.value
+												)
+											}
+											aria-label="Sort materials"
+											className="bg-transparent text-sm focus-visible:ring-2 focus-visible:ring-blue-500"
 								>
 									<option>Popular</option>
 									<option>
@@ -410,7 +419,7 @@ export default function MarketPage() {
 
 					{/* Loading */}
 					{isLoading ? (
-						<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+						<div aria-live="polite" aria-busy="true" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
 							{Array.from({
 								length: itemsPerPage,
 							}).map((_, i) => (
@@ -421,7 +430,7 @@ export default function MarketPage() {
 							))}
 						</div>
 					) : isError ? (
-						<div className="bg-white rounded-2xl border border-gray-200 py-20 px-6 text-center shadow-sm">
+						<div aria-live="polite" className="bg-white rounded-2xl border border-gray-200 py-20 px-6 text-center shadow-sm">
 							<h3 className="text-lg font-bold text-red-600 mb-2">
 								Error loading materials
 							</h3>
@@ -432,17 +441,17 @@ export default function MarketPage() {
 							</p>
 						</div>
 					) : materials.length === 0 ? (
-						<div className="bg-white rounded-2xl border border-gray-200 py-20 px-6 text-center shadow-sm">
+						<div aria-live="polite" className="bg-white rounded-2xl border border-gray-200 py-20 px-6 text-center shadow-sm">
 							<h3 className="text-lg font-bold text-gray-900 mb-2">
 								No materials found
 							</h3>
 
-							<button
-								onClick={resetFilters}
-								className="text-blue-600 font-medium text-sm hover:underline"
-							>
-								Clear all filters
-							</button>
+								<button
+									onClick={resetFilters}
+									className="text-blue-600 font-medium text-sm hover:underline focus-visible:ring-2 focus-visible:ring-blue-500"
+								>
+									Clear all filters
+								</button>
 						</div>
 					) : (
 						<>
@@ -464,6 +473,8 @@ export default function MarketPage() {
 								transition={{
 									duration: 0.4,
 								}}
+								role="list"
+								aria-live="polite"
 								className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
 							>
 								{materials.map((material) => {
@@ -495,6 +506,7 @@ export default function MarketPage() {
 									return (
 										<article
 											key={materialId}
+											role="listitem"
 											className="relative bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:border-blue-300 transition-all duration-300 flex flex-col group"
 										>
 											<SaveMaterialButton
@@ -616,7 +628,7 @@ export default function MarketPage() {
 																material
 															)
 														}
-														className={`flex items-center justify-center gap-1 py-1.5 rounded-lg font-bold text-[10px] border ${
+														className={`flex items-center justify-center gap-1 py-1.5 rounded-lg font-bold text-[10px] border focus-visible:ring-2 focus-visible:ring-blue-500 ${
 															isAlreadyInComp
 																? "bg-amber-500 border-amber-600 text-white"
 																: "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
@@ -635,7 +647,7 @@ export default function MarketPage() {
 																material
 															)
 														}
-														className={`flex items-center justify-center gap-1 py-1.5 rounded-lg font-bold text-[10px] border ${
+														className={`flex items-center justify-center gap-1 py-1.5 rounded-lg font-bold text-[10px] border focus-visible:ring-2 focus-visible:ring-blue-500 ${
 															isAlreadyInCart
 																? "bg-emerald-600 border-emerald-700 text-white"
 																: "bg-blue-600 hover:bg-blue-700 border-blue-700 text-white"
@@ -658,6 +670,7 @@ export default function MarketPage() {
 
 							{/* Pagination */}
 							{totalPages > 1 && (
+								<nav aria-label="Pagination">
 								<div className="flex justify-center mt-8 gap-2">
 									{Array.from({
 										length: totalPages,
@@ -669,7 +682,8 @@ export default function MarketPage() {
 													i + 1
 												)
 											}
-											className={`px-3 py-1.5 rounded ${
+											aria-current={currentPage === i + 1 ? "page" : undefined}
+											className={`px-3 py-1.5 rounded focus-visible:ring-2 focus-visible:ring-blue-500 ${
 												currentPage ===
 												i + 1
 													? "bg-blue-600 text-white"
@@ -680,6 +694,7 @@ export default function MarketPage() {
 										</button>
 									))}
 								</div>
+								</nav>
 							)}
 						</>
 					)}

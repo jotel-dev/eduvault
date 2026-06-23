@@ -37,9 +37,9 @@ function PreviewBlock({ title, emptyLabel, items }) {
 		<section className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
 			<h2 className="text-lg font-semibold text-gray-900 mb-3">{title}</h2>
 			{hasItems ? (
-				<ul className="space-y-3">
+				<ul role="list" className="space-y-3">
 					{items.map((item) => (
-						<li key={item} className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-gray-700">
+						<li key={item} role="listitem" className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-gray-700">
 							{item}
 						</li>
 					))}
@@ -82,7 +82,7 @@ export default function MaterialDetailsPage() {
 		<>
 			<Navbar />
 
-			<section className="relative bg-[#fffaf6] min-h-screen py-10 px-6 md:px-20">
+			<main className="relative bg-[#fffaf6] min-h-screen py-10 px-6 md:px-20">
 				{/* 🔹 Background Grid Pattern */}
 				<div
 					className="absolute inset-0 bg-[linear-gradient(to_right,#f2ede8_1px,transparent_1px),linear-gradient(to_bottom,#f2ede8_1px,transparent_1px)] bg-[size:40px_40px] opacity-70 pointer-events-none -z-10"
@@ -95,15 +95,18 @@ export default function MaterialDetailsPage() {
 							initial={{ opacity: 0, y: 40 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ duration: 0.6 }}
+							aria-live="polite"
 							className="max-w-6xl mx-auto"
 						>
 							{/* Breadcrumb */}
+							<nav aria-label="Breadcrumb">
 							<p className="text-sm text-gray-500 mb-6">
-								<Link href="/marketplace" className="text-blue-600 hover:underline">
+								<Link href="/marketplace" className="text-blue-600 hover:underline focus-visible:ring-2 focus-visible:ring-blue-500">
 									Marketplace
 								</Link>{" "}
 								→ {material.title}
 							</p>
+							</nav>
 
 							{/* Top Section */}
 							<div className="flex flex-col md:flex-row gap-10">
@@ -171,19 +174,19 @@ export default function MaterialDetailsPage() {
 										<SaveMaterialButton material={material} variant="detail" />
 										{isOwned ? (
 											<button 
-												className="px-8 py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md transition flex items-center gap-2 shadow-sm"
+												className="px-8 py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md transition flex items-center gap-2 shadow-sm focus-visible:ring-2 focus-visible:ring-blue-500"
 												onClick={() => window.open(material.downloadUrl || '#', '_blank')}
 											>
 												<FaCheckCircle /> Download Material
 											</button>
 										) : (
 											<>
-												<button className="px-6 py-2 border border-gray-300 text-gray-700 font-semibold rounded-md hover:bg-gray-100 transition">
+												<button className="px-6 py-2 border border-gray-300 text-gray-700 font-semibold rounded-md hover:bg-gray-100 transition focus-visible:ring-2 focus-visible:ring-blue-500">
 													Add to Cart
 												</button>
 												<button
 													onClick={() => setShowBuyModal(true)}
-													className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition"
+													className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition focus-visible:ring-2 focus-visible:ring-blue-500"
 												>
 													Buy Now!
 												</button>
@@ -210,10 +213,11 @@ export default function MaterialDetailsPage() {
 									<p className="text-sm text-gray-600 mb-4 leading-relaxed">
 										{material.shortSummary || material.description}
 									</p>
-									<div className="flex flex-wrap gap-2 mt-2">
+									<div className="flex flex-wrap gap-2 mt-2" role="list">
 										{material.tags?.map((tag, i) => (
 											<span
 												key={i}
+												role="listitem"
 												className="text-xs bg-gray-100 text-gray-700 px-3 py-1 rounded-full"
 											>
 												#{tag}
@@ -289,16 +293,16 @@ export default function MaterialDetailsPage() {
 										summaries, learning outcomes, table of contents entries, and sample
 										notes. Missing values should stay friendly and non-blocking.
 									</p>
-									<ul className="space-y-3 text-sm text-gray-700">
-										<li className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+									<ul role="list" className="space-y-3 text-sm text-gray-700">
+										<li role="listitem" className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
 											<strong className="text-gray-900">coverImageUrl</strong> or
 											thumbnail fallback for the hero image.
 										</li>
-										<li className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+										<li role="listitem" className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
 											<strong className="text-gray-900">shortSummary</strong> for the
 											listing teaser.
 										</li>
-										<li className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+										<li role="listitem" className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
 											<strong className="text-gray-900">learningOutcomes</strong>,
 											<strong className="text-gray-900"> tableOfContents</strong>, and
 											<strong className="text-gray-900"> sampleNotes</strong> as arrays
@@ -329,7 +333,7 @@ export default function MaterialDetailsPage() {
 						</motion.div>
 					)}
 				</QueryStateProvider>
-			</section>
+			</main>
 
 			{materialQuery.data && (
 				<Web3ErrorBoundary onRetry={() => setShowBuyModal(false)}>
