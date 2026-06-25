@@ -529,17 +529,52 @@ function formatRating(rating) {
 							</p>
 						</div>
 					) : materials.length === 0 ? (
-						<div aria-live="polite" className="bg-white rounded-2xl border border-gray-200 py-20 px-6 text-center shadow-sm">
-							<h3 className="text-lg font-bold text-gray-900 mb-2">
+						<div aria-live="polite" className="bg-white rounded-2xl border border-gray-200 py-12 px-6 text-center shadow-sm">
+							<h3 className="text-lg font-bold text-gray-900 mb-3">
 								No materials found
 							</h3>
-
+							<p className="text-gray-600 mb-6 max-w-md mx-auto">
+								{searchQuery
+									? `No results for "${searchQuery}". Try different keywords or browse by subject.`
+									: "Try adjusting your filters to find what you're looking for."}
+							</p>
+							<div className="flex flex-col sm:flex-row gap-3 justify-center">
 								<button
 									onClick={resetFilters}
-									className="text-blue-600 font-medium text-sm hover:underline focus-visible:ring-2 focus-visible:ring-blue-500"
+									className="inline-flex items-center justify-center px-5 py-2.5 bg-blue-600 text-white font-medium text-sm rounded-lg hover:bg-blue-700 transition"
 								>
 									Clear all filters
 								</button>
+								<button
+									onClick={() => {
+										setSearchQuery("");
+										setCurrentPage(1);
+									}}
+									className="inline-flex items-center justify-center px-5 py-2.5 border border-gray-200 text-gray-700 font-medium text-sm rounded-lg hover:bg-gray-50 transition"
+								>
+									Browse all materials
+								</button>
+							</div>
+							{searchQuery && (
+								<div className="mt-8 border-t border-gray-200 pt-6">
+									<p className="text-sm text-gray-500 mb-4">Try searching for:</p>
+									<div className="flex flex-wrap gap-2 justify-center">
+										{["Math", "Science", "Technology", "Business"].map((subject) => (
+											<button
+												key={subject}
+												onClick={() => {
+													setSearchQuery(subject.toLowerCase());
+													setActiveSubject(subject);
+													setCurrentPage(1);
+												}}
+												className="px-3 py-1.5 bg-blue-50 text-blue-600 text-xs font-medium rounded-full hover:bg-blue-100 transition"
+											>
+												{subject}
+											</button>
+										))}
+									</div>
+								</div>
+							)}
 						</div>
 					) : (
 						<>
