@@ -18,10 +18,47 @@ function getClientPromise() {
   return globalForMongo._mongoClientPromise;
 }
 
+let indexesCreated = false;
+
+async function ensureIndexes(db) {
+  try {
+    const collection = db.collection("materials");
+    
+    // Create compound index for category and price search optimization
+    await collection.createIndex(
+      { category: 1, price: 1 },
+      { name: "materials_category_price_idx", background: true }
+    );
+
+    // Create compound text index for title and description search
+    await collection.createIndex(
+      { title: "text", description: "text" },
+      { name: "materials_text_idx", background: true }
+    );
+
+    // Create compound index for title, description, price, and category
+    await collection.createIndex(
+      { category: 1, price: 1, title: 1, description: 1 },
+      { name: "materials_search_compound_idx", background: true }
+    );
+
+    console.log("MongoDB indexes ensured successfully.");
+  } catch (error) {
+    console.error("Failed to create MongoDB indexes:", error);
+  }
+}
+
 export async function getDb() {
   const client = await getClientPromise();
   // When DB name is in connection string, driver selects it automatically.
   // Otherwise, fallback to "eduvault".
   const dbName = process.env.MONGODB_DB || "eduvault";
-  return client.db(dbName);
+  const db = client.db(dbName);
+
+  if (!indexesCreated) {
+    indexesCreated = true;
+    ensureIndexes(db).catch(err => console.error("Error creating indexes:", err));
+  }
+
+  return db;
 }
