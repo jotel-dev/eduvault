@@ -17,10 +17,13 @@ import SaveMaterialButton from "@/components/materials/SaveMaterialButton";
 import { trackRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import RecommendedMaterials from "@/components/materials/RecommendedMaterials";
 import MaterialReviewPanel from "@/components/materials/MaterialReviewPanel";
+import LearnerNotes from "@/components/materials/LearnerNotes";
 import { useAccount } from "wagmi";
 
+const FALLBACK_IMAGE = "/images/image2.jpg";
+
 function getPreviewImage(material) {
-	return material.coverImageUrl || material.thumbnailUrl || material.image || "/images/image2.jpg";
+	return material.coverImageUrl || material.thumbnailUrl || material.image || FALLBACK_IMAGE;
 }
 
 function getPreviewCounts(material) {
@@ -142,6 +145,7 @@ export default function MaterialDetailsPage() {
 	const params = useParams();
 	const id = String(params.id);
 	const [showBuyModal, setShowBuyModal] = useState(false);
+	const [imgSrc, setImgSrc] = useState(null);
 	const materialQuery = useMaterialDetail(id);
 	const entitlementQuery = useEntitlement(id);
 	const { address } = useAccount();
@@ -222,11 +226,12 @@ export default function MaterialDetailsPage() {
 								{/* Image Preview */}
 								<div className="flex-1 bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-200">
 									<Image
-										src={getPreviewImage(material)}
+										src={imgSrc ?? getPreviewImage(material)}
 										alt={material.title}
 										width={800}
 										height={600}
 										className="w-full h-[380px] object-cover"
+										onError={() => setImgSrc(FALLBACK_IMAGE)}
 									/>
 								</div>
 
@@ -235,7 +240,12 @@ export default function MaterialDetailsPage() {
 									<h1 className="text-2xl md:text-3xl font-bold text-gray-900">
 										{material.title}
 									</h1>
-									<ResourceStatusBadge material={material} className="mt-1" />
+									<ResourceStatusBadge
+										material={material}
+										showCreator
+										showUpdatedAt
+										className="mt-1"
+									/>
 									<p className="text-gray-600 text-sm leading-relaxed">
 										{material.shortSummary || material.description || "Creator preview not shared yet."}
 									</p>
@@ -474,6 +484,10 @@ export default function MaterialDetailsPage() {
 								currentAddress={address}
 								creatorAddress={material.userAddress || material.ownerAddress || material.creatorAddress || material.author?.walletAddress}
 							/>
+
+							{address && (
+								<LearnerNotes materialId={id} walletAddress={address} />
+							)}
 
 							{/* Recommendations */}
 							{materialQuery.data && (
