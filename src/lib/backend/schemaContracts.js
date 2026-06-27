@@ -5,6 +5,8 @@ export const COLLECTIONS = {
   entitlementCache: "entitlement_cache",
   syncState: "sync_state",
   syncEvents: "sync_events",
+  collections: "collections",
+  progress: "progress",
   deadLetterEvents: "dead_letter_events",
   materialHistory: "material_history",
   savedMaterials: "saved_materials",
@@ -36,6 +38,12 @@ export const REQUIRED_INDEXES = {
   ],
   sync_state: [{ keys: { source: 1 }, options: { unique: true } }],
   sync_events: [{ keys: { _id: 1 }, options: { unique: true } }],
+  collections: [
+    { keys: { creatorId: 1, createdAt: -1 } },
+  ],
+  progress: [
+    { keys: { userId: 1, materialId: 1 }, options: { unique: true } },
+    { keys: { completedAt: -1 } },
   dead_letter_events: [
     { keys: { _id: 1 }, options: { unique: true } },
     { keys: { status: 1 } },
