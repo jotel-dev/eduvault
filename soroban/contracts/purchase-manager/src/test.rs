@@ -3,7 +3,7 @@
 extern crate std;
 
 use super::*;
-use soroban_sdk::testutils::{Address as _, Events as _};
+use soroban_sdk::testutils::{Address as _, Events as _, Ledger};
 use soroban_sdk::{contract, contractimpl, contracttype};
 use soroban_sdk::{vec, Event, Symbol};
 
@@ -305,6 +305,83 @@ fn rejects_admin_calls_from_non_admin() {
     assert_eq!(result, Err(Ok(PurchaseError::NotAuthorized)));
 }
 
+#[test]
+fn admin_updates_platform_fee() {
+    let env = Env::default();
+    let admin = Address::generate(&env);
+    let registry = Address::generate(&env);
+    let treasury = Address::generate(&env);
+
+    env.mock_all_auths();
+
+    let contract_id = env.register(PurchaseManager, ());
+    let client = PurchaseManagerClient::new(&env, &contract_id);
+
+    // Initialize and verify initial state
+    client.initialize(&admin, &registry, &treasury, &500);
+    let config = client.get_platform_config().unwrap();
+    assert_eq!(config.platform_fee_bps, 500);
+
+    // Update to a new valid rate
+    client.update_platform_fee(&admin, &200);
+    let config = client.get_platform_config().unwrap();
+    assert_eq!(config.platform_fee_bps, 200);
+
+    // Verify the fee update doesn't break anything
+    let config = client.get_platform_config().unwrap();
+    assert_eq!(config.treasury, treasury);
+    assert_eq!(config.platform_fee_bps, 200);
+    assert!(!config.paused);
+}
+
+#[test]
+fn admin_updates_platform_fee_to_max() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let admin = Address::generate(&env);
+    let registry = Address::generate(&env);
+    let treasury = Address::generate(&env);
+
+    let (_, client) = install_and_init_contract(&env, &admin, &registry, &treasury, 500);
+
+    // Update to max allowed (10% = 1_000 bps)
+    client.update_platform_fee(&admin, &1_000);
+    let config = client.get_platform_config().unwrap();
+    assert_eq!(config.platform_fee_bps, 1_000);
+}
+
+#[test]
+fn rejects_update_platform_fee_above_max() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let admin = Address::generate(&env);
+    let registry = Address::generate(&env);
+    let treasury = Address::generate(&env);
+
+    let (_, client) = install_and_init_contract(&env, &admin, &registry, &treasury, 500);
+
+    let result = client.try_update_platform_fee(&admin, &1_001);
+    assert_eq!(result, Err(Ok(PurchaseError::InvalidPlatformFee)));
+}
+
+#[test]
+fn rejects_update_platform_fee_by_non_admin() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let admin = Address::generate(&env);
+    let non_admin = Address::generate(&env);
+    let registry = Address::generate(&env);
+    let treasury = Address::generate(&env);
+
+    let (_, client) = install_and_init_contract(&env, &admin, &registry, &treasury, 500);
+
+    let result = client.try_update_platform_fee(&non_admin, &300);
+    assert_eq!(result, Err(Ok(PurchaseError::NotAuthorized)));
+}
+
 // ============== Purchase Flow Tests ==============
 
 // Note: These tests require mocking the MaterialRegistry
@@ -378,13 +455,13 @@ fn successful_purchase_creates_entitlement_and_distributes_multiple_payouts() {
         }
     );
 
-    let escrow = client.get_escrow_record(purchase_id).unwrap();
+    let escrow = client.get_escrow_record(&purchase_id).unwrap();
     assert_eq!(escrow.purchase_id, purchase_id);
     assert_eq!(escrow.seller_net, 950_000);
     assert!(!escrow.claimed);
     assert_eq!(escrow.payout_shares.len(), 2);
 
-    assert_eq!(purchase_events.events().len(), 4);
+    assert_eq!(purchase_events.events().len(), 3);
 
     let duplicate = client.try_purchase(&buyer, &material_id, &asset, &1_000_000);
     assert_eq!(duplicate, Err(Ok(PurchaseError::EntitlementAlreadyExists)));
@@ -453,7 +530,7 @@ fn purchase_distribution_gives_final_recipient_rounding_remainder() {
         }
     );
 
-    let escrow = client.get_escrow_record(purchase_id).unwrap();
+    let escrow = client.get_escrow_record(&purchase_id).unwrap();
     assert_eq!(escrow.seller_net, 101);
     assert!(!escrow.claimed);
 }
@@ -780,7 +857,7 @@ fn entitlement_record_matches_purchase_details() {
 
     let purchase_id = client.purchase(&buyer, &material_id, &asset, &2_000_000);
     let entitlement = client.get_entitlement(&material_id, &buyer).unwrap();
-    let escrow = client.get_escrow_record(purchase_id).unwrap();
+    let escrow = client.get_escrow_record(&purchase_id).unwrap();
 
     assert_eq!(entitlement.material_id, material_id);
     assert_eq!(entitlement.buyer, buyer);
@@ -788,7 +865,7 @@ fn entitlement_record_matches_purchase_details() {
     assert_eq!(entitlement.purchase_id, purchase_id);
     assert_eq!(entitlement.asset, asset);
     assert_eq!(entitlement.amount, 2_000_000);
-    assert!(entitlement.granted_ledger > 0);
+    assert_eq!(entitlement.granted_ledger, env.ledger().sequence());
 
     assert_eq!(escrow.purchase_id, purchase_id);
     assert_eq!(escrow.seller_net, 1_900_000);
@@ -1190,7 +1267,7 @@ fn escrow_record_queryable_after_purchase() {
     client.set_asset_allowed(&admin, &asset, &AssetKind::Token, &true);
 
     let purchase_id = client.purchase(&buyer, &material_id, &asset, &1_000_000);
-    let escrow = client.get_escrow_record(purchase_id).unwrap();
+    let escrow = client.get_escrow_record(&purchase_id).unwrap();
 
     assert_eq!(escrow.purchase_id, purchase_id);
     assert_eq!(escrow.material_id, material_id);
@@ -1289,7 +1366,7 @@ fn withdraw_payouts_succeeds_after_lock_period() {
 
     let purchase_id = client.purchase(&buyer, &material_id, &asset, &1_000_000);
 
-    env.ledger().set_sequence(36_000);
+    env.ledger().set_sequence_number(36_000);
 
     client.withdraw_payouts(&creator, &purchase_id);
 
@@ -1297,13 +1374,21 @@ fn withdraw_payouts_succeeds_after_lock_period() {
     assert_eq!(
         asset_client.transfer_at(&1),
         MockTransfer {
+            from: buyer.clone(),
+            to: contract_id.clone(),
+            amount: 950_000,
+        }
+    );
+    assert_eq!(
+        asset_client.transfer_at(&2),
+        MockTransfer {
             from: contract_id.clone(),
             to: creator.clone(),
             amount: 950_000,
         }
     );
 
-    let escrow = client.get_escrow_record(purchase_id).unwrap();
+    let escrow = client.get_escrow_record(&purchase_id).unwrap();
     assert!(escrow.claimed);
 }
 
@@ -1348,7 +1433,7 @@ fn withdraw_payouts_fails_for_non_recipient() {
 
     let purchase_id = client.purchase(&buyer, &material_id, &asset, &1_000_000);
 
-    env.ledger().set_sequence(36_000);
+    env.ledger().set_sequence_number(36_000);
 
     let non_recipient = Address::generate(&env);
     let result = client.try_withdraw_payouts(&non_recipient, &purchase_id);
@@ -1396,7 +1481,7 @@ fn withdraw_payouts_fails_when_already_claimed() {
 
     let purchase_id = client.purchase(&buyer, &material_id, &asset, &1_000_000);
 
-    env.ledger().set_sequence(36_000);
+    env.ledger().set_sequence_number(36_000);
 
     client.withdraw_payouts(&creator, &purchase_id);
 
@@ -1489,7 +1574,7 @@ fn is_escrow_releasable_returns_true_after_lock_period() {
 
     let purchase_id = client.purchase(&buyer, &material_id, &asset, &1_000_000);
 
-    env.ledger().set_sequence(36_000);
+    env.ledger().set_sequence_number(36_000);
 
     assert!(client.is_escrow_releasable(&purchase_id));
 }

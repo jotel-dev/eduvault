@@ -139,6 +139,8 @@ enum DataKey {
     PurchaseNonce,
     Entitlement((BytesN<32>, Address)),
     Escrow(u64),
+    PendingAdmin,
+    CreatorTier(Address),
 }
 
 /// Contract errors
@@ -173,6 +175,9 @@ pub enum PurchaseError {
 
     // Escrow errors
     EscrowLocked = 50,
+
+    // Admin transfer errors
+    NoPendingAdminTransfer = 60,
 }
 
 /// Event: purchase.completed
@@ -249,6 +254,32 @@ pub struct EscrowReleasedEvent {
     pub material_id: BytesN<32>,
     pub asset: Address,
     pub amount: i128,
+}
+
+/// Event: admin.transfer_initiated
+#[contractevent(topics = ["admin", "transfer_initiated"], data_format = "vec")]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct AdminTransferInitiatedEvent {
+    #[topic]
+    pub from: Address,
+    pub pending_admin: Address,
+}
+
+/// Event: admin.transfer_accepted
+#[contractevent(topics = ["admin", "transfer_accepted"], data_format = "vec")]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct AdminTransferAcceptedEvent {
+    #[topic]
+    pub new_admin: Address,
+}
+
+/// Event: creator.tier_updated
+#[contractevent(topics = ["creator", "tier_updated"], data_format = "vec")]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct CreatorTierUpdatedEvent {
+    #[topic]
+    pub creator: Address,
+    pub tier: CreatorTier,
 }
 
 /// The PurchaseManager contract
@@ -760,6 +791,40 @@ impl PurchaseManager {
         env.storage()
             .persistent()
             .set(&DataKey::PlatformConfig, &config);
+
+        Ok(())
+    }
+
+    /// Update the platform fee rate (admin only).
+    ///
+    /// Updates the platform fee to a new rate, validated against the maximum
+    /// ceiling of 10% (1 000 basis points). The change is applied instantly
+    /// to all subsequent purchases.
+    pub fn update_platform_fee(
+        env: Env,
+        admin: Address,
+        new_platform_fee_bps: u32,
+    ) -> Result<(), PurchaseError> {
+        admin.require_auth();
+        verify_admin(&env, &admin)?;
+
+        if new_platform_fee_bps > MAX_PLATFORM_FEE_BPS {
+            return Err(PurchaseError::InvalidPlatformFee);
+        }
+
+        let mut config = get_platform_config(&env)?;
+        config.platform_fee_bps = new_platform_fee_bps;
+
+        env.storage()
+            .persistent()
+            .set(&DataKey::PlatformConfig, &config);
+
+        PlatformConfigUpdatedEvent {
+            treasury: config.treasury.clone(),
+            platform_fee_bps: new_platform_fee_bps,
+            paused: config.paused,
+        }
+        .publish(&env);
 
         Ok(())
     }
