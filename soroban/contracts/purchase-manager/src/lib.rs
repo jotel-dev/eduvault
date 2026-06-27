@@ -1,7 +1,7 @@
 #![no_std]
 
 use soroban_sdk::{
-    contract, contracterror, contractevent, contractimpl, contracttype, Address, BytesN, Env,
+    contract, contracterror, contractevent, contractimpl, contracttype, Address, Bytes, BytesN, Env,
     IntoVal, Symbol, Vec,
 };
 
@@ -197,6 +197,7 @@ pub struct PurchaseCompletedEvent {
     pub platform_fee: i128,
     pub seller_net_amount: i128,
     pub entitlement_active: bool,
+    pub transaction_id: Bytes,
 }
 
 /// Event: payout.distributed
@@ -212,6 +213,7 @@ pub struct PayoutDistributedEvent {
     pub role: Symbol,
     pub asset: Address,
     pub amount: i128,
+    pub transaction_id: Bytes,
 }
 
 /// Event: admin.asset_policy_updated
@@ -451,6 +453,7 @@ impl PurchaseManager {
         material_id: BytesN<32>,
         asset: Address,
         expected_amount: i128,
+        transaction_id: Bytes,
     ) -> Result<u64, PurchaseError> {
         buyer.require_auth();
 
@@ -508,6 +511,7 @@ impl PurchaseManager {
                 role: Symbol::new(&env, "platform_fee"),
                 asset: asset.clone(),
                 amount: platform_fee,
+                transaction_id: transaction_id.clone(),
             }
             .publish(&env);
         }
@@ -529,6 +533,8 @@ impl PurchaseManager {
             total_amount: gross,
             platform_fee,
             seller_net,
+            &transaction_id,
+        )?;
             payout_shares: material.payout_shares.clone(),
             purchase_ledger: current_ledger,
             claimed: false,
@@ -566,6 +572,7 @@ impl PurchaseManager {
             platform_fee,
             seller_net_amount: seller_net,
             entitlement_active: true,
+            transaction_id,
         }
         .publish(&env);
 
@@ -1105,6 +1112,10 @@ fn get_entitlement_internal(
     env: &Env,
     material_id: &BytesN<32>,
     buyer: &Address,
+    payout_shares: &Vec<PayoutShare>,
+    asset: &Address,
+    seller_net: i128,
+    transaction_id: &Bytes,
 ) -> Option<EntitlementRecord> {
     env.storage()
         .persistent()
@@ -1167,6 +1178,7 @@ fn distribute_payout_shares_from_contract(
                 role: Symbol::new(env, "creator_share"),
                 asset: escrow.asset.clone(),
                 amount: share_amount,
+                transaction_id: transaction_id.clone(),
             }
             .publish(env);
         }
