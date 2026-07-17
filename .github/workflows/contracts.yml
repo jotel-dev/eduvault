@@ -9,17 +9,6 @@ on:
       - "package-lock.json"
       - ".github/workflows/contracts.yml"
   push:
-name: Contracts CI
-
-on:
-  pull_request:
-    paths:
-      - "archive/legacy-evm/**"
-      - "soroban/**"
-      - "package.json"
-      - "package-lock.json"
-      - ".github/workflows/contracts.yml"
-  push:
     branches:
       - main
       - develop
