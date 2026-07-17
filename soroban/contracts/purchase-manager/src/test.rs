@@ -1791,7 +1791,8 @@ fn set_creator_tier_requires_admin() {
 
     let (_, client) = install_and_init_contract(&env, &admin, &registry, &treasury, 500);
 
-    let purchase_id = client.purchase(&buyer, &material_id, &asset, &1_000_000);
+    let transaction_id = Bytes::from_array(&env, &[0; 32]);
+    let purchase_id = client.purchase(&buyer, &material_id, &asset, &1_000_000, &transaction_id);
 
     env.ledger().set_sequence_number(36_000);
 
@@ -1841,7 +1842,8 @@ fn is_escrow_releasable_returns_false_before_lock_period() {
     client.set_asset_allowed(&admin, &asset, &AssetKind::Token, &true);
 
     assert_eq!(client.get_creator_tier(&creator), CreatorTier::Default);
-    let purchase_id = client.purchase(&buyer, &material_id, &asset, &1_000_000);
+    let transaction_id = Bytes::from_array(&env, &[0; 32]);
+    let purchase_id = client.purchase(&buyer, &material_id, &asset, &1_000_000, &transaction_id);
 
     assert!(!client.is_escrow_releasable(&purchase_id));
 }
@@ -1885,7 +1887,8 @@ fn is_escrow_releasable_returns_true_after_lock_period() {
     let (_, client) = install_and_init_contract(&env, &admin, &registry, &treasury, 500);
     client.set_asset_allowed(&admin, &asset, &AssetKind::Token, &true);
 
-    let purchase_id = client.purchase(&buyer, &material_id, &asset, &1_000_000);
+    let transaction_id = Bytes::from_array(&env, &[0; 32]);
+    let purchase_id = client.purchase(&buyer, &material_id, &asset, &1_000_000, &transaction_id);
 
     client.set_creator_tier(&admin, &creator, &CreatorTier::Tier1);
     assert_eq!(client.get_creator_tier(&creator), CreatorTier::Tier1);
