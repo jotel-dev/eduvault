@@ -12,5 +12,9 @@ doctest = false
 [dependencies]
 soroban-sdk = { workspace = true }
 
+[features]
+seeded-defects = []
+
 [dev-dependencies]
 soroban-sdk = { workspace = true, features = ["testutils"] }
+proptest = "1.4.0"

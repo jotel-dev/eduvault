@@ -1,8 +1,8 @@
 #![no_std]
 
 use soroban_sdk::{
-    contract, contracterror, contractevent, contractimpl, contracttype, Address, Bytes, BytesN, Env,
-    IntoVal, Symbol, Vec,
+    contract, contracterror, contractevent, contractimpl, contracttype, Address, Bytes, BytesN,
+    Env, IntoVal, Symbol, Vec,
 };
 
 pub mod auth;
@@ -533,8 +533,6 @@ impl PurchaseManager {
             total_amount: gross,
             platform_fee,
             seller_net,
-            &transaction_id,
-        )?;
             payout_shares: material.payout_shares.clone(),
             purchase_ledger: current_ledger,
             claimed: false,
@@ -620,6 +618,7 @@ impl PurchaseManager {
         }
 
         let current_ledger = env.ledger().sequence();
+        #[cfg(not(feature = "seeded-defects"))]
         if current_ledger < escrow.purchase_ledger + ESCROW_LOCK_PERIOD_LEDGERS {
             return Err(PurchaseError::EscrowLocked);
         }
@@ -934,12 +933,8 @@ impl PurchaseManager {
             return Err(PurchaseError::NotAuthorized);
         }
 
-        env.storage()
-            .persistent()
-            .set(&DataKey::Admin, &new_admin);
-        env.storage()
-            .persistent()
-            .remove(&DataKey::PendingAdmin);
+        env.storage().persistent().set(&DataKey::Admin, &new_admin);
+        env.storage().persistent().remove(&DataKey::PendingAdmin);
 
         AdminTransferAcceptedEvent {
             new_admin: new_admin.clone(),
@@ -974,11 +969,7 @@ impl PurchaseManager {
             .persistent()
             .set(&DataKey::CreatorTier(creator.clone()), &tier);
 
-        CreatorTierUpdatedEvent {
-            creator,
-            tier,
-        }
-        .publish(&env);
+        CreatorTierUpdatedEvent { creator, tier }.publish(&env);
 
         Ok(())
     }
@@ -1019,7 +1010,6 @@ fn get_platform_config(env: &Env) -> Result<PlatformConfig, PurchaseError> {
         .get(&DataKey::PlatformConfig)
         .ok_or(PurchaseError::NotAuthorized)
 }
-
 
 fn is_asset_allowed(env: &Env, asset: &Address) -> bool {
     env.storage()
@@ -1195,3 +1185,6 @@ fn distribute_payout_shares_from_contract(
 
 #[cfg(test)]
 mod test;
+
+#[cfg(test)]
+mod fuzz;

@@ -605,6 +605,10 @@ fn require_creator_or_upgrade_admin(
     creator: &Address,
     actor: &Address,
 ) -> Result<(), RegistryError> {
+    #[cfg(feature = "seeded-defects")]
+    {
+        return Ok(());
+    }
     actor.require_auth();
     if actor == creator {
         return Ok(());
@@ -648,3 +652,6 @@ fn validate_quote_assets(env: &Env, quotes: &Vec<AssetQuote>) -> Result<(), Regi
 
 #[cfg(test)]
 mod test;
+
+#[cfg(test)]
+mod fuzz;
