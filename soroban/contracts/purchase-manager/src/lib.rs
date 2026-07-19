@@ -533,8 +533,6 @@ impl PurchaseManager {
             total_amount: gross,
             platform_fee,
             seller_net,
-            &transaction_id,
-        )?;
             payout_shares: material.payout_shares.clone(),
             purchase_ledger: current_ledger,
             claimed: false,
@@ -1112,10 +1110,6 @@ fn get_entitlement_internal(
     env: &Env,
     material_id: &BytesN<32>,
     buyer: &Address,
-    payout_shares: &Vec<PayoutShare>,
-    asset: &Address,
-    seller_net: i128,
-    transaction_id: &Bytes,
 ) -> Option<EntitlementRecord> {
     env.storage()
         .persistent()
@@ -1195,3 +1189,5 @@ fn distribute_payout_shares_from_contract(
 
 #[cfg(test)]
 mod test;
+#[cfg(test)]
+mod fuzz;

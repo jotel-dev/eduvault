@@ -1,6 +1,8 @@
 name: Contracts CI
 
 on:
+  schedule:
+    - cron: '0 0 * * *'
   pull_request:
     paths:
       - "archive/legacy-evm/**"
@@ -56,6 +58,8 @@ jobs:
         if: steps.detect_soroban.outputs.present == 'true'
         working-directory: soroban
         run: cargo test --workspace --all-targets
+        env:
+          PROPTEST_CASES: ${{ github.event_name == 'schedule' && '10000' || '256' }}
 
       - name: Check Soroban formatting
         if: steps.detect_soroban.outputs.present == 'true'
