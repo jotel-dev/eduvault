@@ -3,13 +3,13 @@
 extern crate std;
 
 use crate::{
-    AssetKind, AssetQuote, CreatorTier, MaterialRecord, MaterialStatus, PayoutShare,
+    AssetKind, AssetQuote, MaterialRecord, MaterialStatus, PayoutShare,
     PurchaseManager, PurchaseManagerClient,
 };
 use proptest::prelude::*;
 use soroban_sdk::{
-    contract, contractimpl, contracttype, testutils::{Address as _, BytesN as _, Ledger},
-    Address, Bytes, BytesN, Env, Symbol, Vec, vec,
+    contract, contractimpl, contracttype, testutils::{Address as _, Ledger},
+    Address, Bytes, BytesN, Env, IntoVal, Symbol, Vec, vec,
 };
 use std::collections::BTreeMap;
 
@@ -156,10 +156,10 @@ proptest! {
         let env = Env::default();
         env.mock_all_auths();
         
-        let contract_id = env.register_contract(None, PurchaseManager);
+        let contract_id = env.register(PurchaseManager, ());
         let client = PurchaseManagerClient::new(&env, &contract_id);
         
-        let mock_registry_id = env.register_contract(None, MockRegistry);
+        let mock_registry_id = env.register(MockRegistry, ());
         
         let mut actors = std::vec::Vec::new();
         for _ in 0..NUM_ACTORS {
@@ -170,7 +170,7 @@ proptest! {
         
         let mut assets = std::vec::Vec::new();
         for _ in 0..NUM_ASSETS {
-            assets.push(env.register_contract(None, MockAsset));
+            assets.push(env.register(MockAsset, ()));
         }
 
         let mut materials = std::vec::Vec::new();
@@ -212,7 +212,7 @@ proptest! {
                     env.invoke_contract::<()>(
                         &mock_registry_id,
                         &Symbol::new(&env, "set_material"),
-                        vec![&env, mat_id.to_val(), record.to_val()],
+                        vec![&env, mat_id.into_val(&env), record.into_val(&env)],
                     );
                     
                     model.materials.insert(mat_idx, record);
@@ -261,7 +261,8 @@ proptest! {
                     let current_ledger = env.ledger().sequence();
                     env.ledger().set_sequence_number(current_ledger + advance_ledgers);
                     
-                    let res = client.try_withdraw_payouts(actor, &purchase_id);
+                    let txn_id = Bytes::from_array(&env, b"12345678901234567890123456789012");
+                    let res = client.try_withdraw_payouts(actor, &purchase_id, &txn_id);
                     
                     let mut expected_ok = false;
                     
@@ -300,10 +301,10 @@ fn test_mutant_violation() {
     let env = Env::default();
     env.mock_all_auths();
     
-    let contract_id = env.register_contract(None, PurchaseManager);
+    let contract_id = env.register(PurchaseManager, ());
     let client = PurchaseManagerClient::new(&env, &contract_id);
     
-    let mock_registry_id = env.register_contract(None, MockRegistry);
+    let mock_registry_id = env.register(MockRegistry, ());
     let admin = Address::generate(&env);
     let treasury = Address::generate(&env);
     

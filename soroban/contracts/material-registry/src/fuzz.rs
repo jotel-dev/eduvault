@@ -7,7 +7,7 @@ use crate::{
 };
 use proptest::prelude::*;
 use soroban_sdk::{
-    testutils::{Address as _, BytesN as _},
+    testutils::Address as _,
     Address, BytesN, Env, String, Vec,
 };
 use std::collections::BTreeMap;
@@ -101,7 +101,7 @@ proptest! {
         let env = Env::default();
         env.mock_all_auths();
         
-        let contract_id = env.register_contract(None, MaterialRegistry);
+        let contract_id = env.register(MaterialRegistry, ());
         let client = MaterialRegistryClient::new(&env, &contract_id);
         
         let mut actors = std::vec::Vec::new();
@@ -214,7 +214,7 @@ fn test_mutant_violation() {
     let env = Env::default();
     env.mock_all_auths();
     
-    let contract_id = env.register_contract(None, MaterialRegistry);
+    let contract_id = env.register(MaterialRegistry, ());
     let client = MaterialRegistryClient::new(&env, &contract_id);
     
     let creator = Address::generate(&env);

@@ -607,6 +607,7 @@ impl PurchaseManager {
         env: Env,
         caller: Address,
         purchase_id: u64,
+        transaction_id: Bytes,
     ) -> Result<(), PurchaseError> {
         caller.require_auth();
 
@@ -645,6 +646,7 @@ impl PurchaseManager {
                 purchase_id,
                 &escrow.material_id,
                 &escrow,
+                &transaction_id,
             )?;
         }
 
@@ -808,7 +810,7 @@ impl PurchaseManager {
         new_platform_fee_bps: u32,
     ) -> Result<(), PurchaseError> {
         admin.require_auth();
-        verify_admin(&env, &admin)?;
+        auth::require_admin(&env, &admin)?;
 
         if new_platform_fee_bps > MAX_PLATFORM_FEE_BPS {
             return Err(PurchaseError::InvalidPlatformFee);
@@ -900,7 +902,7 @@ impl PurchaseManager {
         new_admin: Address,
     ) -> Result<(), PurchaseError> {
         admin.require_auth();
-        verify_admin(&env, &admin)?;
+        auth::require_admin(&env, &admin)?;
 
         env.storage()
             .persistent()
@@ -932,9 +934,7 @@ impl PurchaseManager {
             return Err(PurchaseError::NotAuthorized);
         }
 
-        env.storage()
-            .persistent()
-            .set(&DataKey::Admin, &new_admin);
+        auth::set_admin_role(&env, &new_admin);
         env.storage()
             .persistent()
             .remove(&DataKey::PendingAdmin);
@@ -966,7 +966,7 @@ impl PurchaseManager {
         tier: CreatorTier,
     ) -> Result<(), PurchaseError> {
         admin.require_auth();
-        verify_admin(&env, &admin)?;
+        auth::require_admin(&env, &admin)?;
 
         env.storage()
             .persistent()
@@ -1140,6 +1140,7 @@ fn distribute_payout_shares_from_contract(
     purchase_id: u64,
     material_id: &BytesN<32>,
     escrow: &EscrowRecord,
+    transaction_id: &Bytes,
 ) -> Result<(), PurchaseError> {
     let contract_address = env.current_contract_address();
     let mut total_distributed: i128 = 0;
