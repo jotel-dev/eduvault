@@ -38,6 +38,7 @@
       ]
     ],
     [],
+    [],
     [
       [
         "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M",
@@ -65,12 +66,11 @@
           "sub_invocations": []
         }
       ]
-    ],
-    []
+    ]
   ],
   "ledger": {
     "protocol_version": 25,
-    "sequence_number": 24970,
+    "sequence_number": 0,
     "timestamp": 0,
     "network_id": "0000000000000000000000000000000000000000000000000000000000000000",
     "base_reserve": 0,
@@ -103,7 +103,7 @@
           },
           "ext": "v0"
         },
-        "live_until": 29065
+        "live_until": 4095
       },
       {
         "entry": {
@@ -147,7 +147,7 @@
           },
           "ext": "v0"
         },
-        "live_until": 29065
+        "live_until": 4095
       },
       {
         "entry": {
@@ -210,7 +210,7 @@
           },
           "ext": "v0"
         },
-        "live_until": 29065
+        "live_until": 4095
       },
       {
         "entry": {
@@ -257,7 +257,7 @@
           },
           "ext": "v0"
         },
-        "live_until": 29065
+        "live_until": 4095
       },
       {
         "entry": {
@@ -311,7 +311,7 @@
               "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M",
               "key": {
                 "ledger_key_nonce": {
-                  "nonce": "1033654523790656264"
+                  "nonce": "4837995959683129791"
                 }
               },
               "durability": "temporary",
@@ -320,7 +320,7 @@
           },
           "ext": "v0"
         },
-        "live_until": 6336969
+        "live_until": 6311999
       },
       {
         "entry": {
@@ -384,5 +384,39 @@
       }
     ]
   },
-  "events": []
+  "events": [
+    {
+      "event": {
+        "ext": "v0",
+        "contract_id": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
+        "type_": "contract",
+        "body": {
+          "v0": {
+            "topics": [
+              {
+                "symbol": "admin"
+              },
+              {
+                "symbol": "asset_policy_updated"
+              },
+              {
+                "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOLZM"
+              }
+            ],
+            "data": {
+              "vec": [
+                {
+                  "u32": 1
+                },
+                {
+                  "bool": false
+                }
+              ]
+            }
+          }
+        }
+      },
+      "failed_call": false
+    }
+  ]
 }

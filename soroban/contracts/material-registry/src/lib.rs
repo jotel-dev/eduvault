@@ -647,6 +647,6 @@ fn validate_quote_assets(env: &Env, quotes: &Vec<AssetQuote>) -> Result<(), Regi
 }
 
 #[cfg(test)]
-mod test;
-#[cfg(test)]
 mod fuzz;
+#[cfg(test)]
+mod test;

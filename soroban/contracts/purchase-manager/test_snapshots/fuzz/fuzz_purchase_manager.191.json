@@ -40,10 +40,6 @@
     [],
     [],
     [],
-    [],
-    [],
-    [],
-    [],
     [
       [
         "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M",
@@ -63,7 +59,7 @@
                   "u32": 1
                 },
                 {
-                  "bool": false
+                  "bool": true
                 }
               ]
             }
@@ -72,9 +68,6 @@
         }
       ]
     ],
-    [],
-    [],
-    [],
     [],
     [
       [
@@ -104,6 +97,37 @@
         }
       ]
     ],
+    [
+      [
+        "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M",
+        {
+          "function": {
+            "contract_fn": {
+              "contract_address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
+              "function_name": "set_asset_allowed",
+              "args": [
+                {
+                  "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M"
+                },
+                {
+                  "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOLZM"
+                },
+                {
+                  "u32": 1
+                },
+                {
+                  "bool": true
+                }
+              ]
+            }
+          },
+          "sub_invocations": []
+        }
+      ]
+    ],
+    [],
+    [],
+    [],
     [
       [
         "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M",
@@ -163,7 +187,7 @@
   ],
   "ledger": {
     "protocol_version": 25,
-    "sequence_number": 139953,
+    "sequence_number": 48768,
     "timestamp": 0,
     "network_id": "0000000000000000000000000000000000000000000000000000000000000000",
     "base_reserve": 0,
@@ -196,7 +220,7 @@
           },
           "ext": "v0"
         },
-        "live_until": 144048
+        "live_until": 52863
       },
       {
         "entry": {
@@ -240,7 +264,7 @@
           },
           "ext": "v0"
         },
-        "live_until": 144048
+        "live_until": 52863
       },
       {
         "entry": {
@@ -284,7 +308,7 @@
           },
           "ext": "v0"
         },
-        "live_until": 144048
+        "live_until": 52863
       },
       {
         "entry": {
@@ -347,7 +371,7 @@
           },
           "ext": "v0"
         },
-        "live_until": 84132
+        "live_until": 52863
       },
       {
         "entry": {
@@ -394,7 +418,7 @@
           },
           "ext": "v0"
         },
-        "live_until": 144048
+        "live_until": 52863
       },
       {
         "entry": {
@@ -409,7 +433,7 @@
                     "symbol": "Material"
                   },
                   {
-                    "bytes": "0101010101010101010101010101010101010101010101010101010101010101"
+                    "bytes": "0000000000000000000000000000000000000000000000000000000000000000"
                   }
                 ]
               },
@@ -421,7 +445,7 @@
                       "symbol": "creator"
                     },
                     "val": {
-                      "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK3IM"
+                      "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDR4"
                     }
                   },
                   {
@@ -429,7 +453,7 @@
                       "symbol": "material_id"
                     },
                     "val": {
-                      "bytes": "0101010101010101010101010101010101010101010101010101010101010101"
+                      "bytes": "0000000000000000000000000000000000000000000000000000000000000000"
                     }
                   },
                   {
@@ -437,7 +461,7 @@
                       "symbol": "paused"
                     },
                     "val": {
-                      "bool": false
+                      "bool": true
                     }
                   },
                   {
@@ -453,7 +477,7 @@
                                 "symbol": "recipient"
                               },
                               "val": {
-                                "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK3IM"
+                                "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDR4"
                               }
                             },
                             {
@@ -482,7 +506,7 @@
                                 "symbol": "amount"
                               },
                               "val": {
-                                "i128": "13696"
+                                "i128": "15459"
                               }
                             },
                             {
@@ -503,7 +527,7 @@
                       "symbol": "status"
                     },
                     "val": {
-                      "u32": 0
+                      "u32": 1
                     }
                   }
                 ]
@@ -512,7 +536,7 @@
           },
           "ext": "v0"
         },
-        "live_until": 35299
+        "live_until": 10072
       },
       {
         "entry": {
@@ -600,7 +624,7 @@
                                 "symbol": "amount"
                               },
                               "val": {
-                                "i128": "35002"
+                                "i128": "82152"
                               }
                             },
                             {
@@ -608,7 +632,7 @@
                                 "symbol": "asset"
                               },
                               "val": {
-                                "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARQG5"
+                                "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOLZM"
                               }
                             }
                           ]
@@ -630,7 +654,7 @@
           },
           "ext": "v0"
         },
-        "live_until": 35299
+        "live_until": 4095
       },
       {
         "entry": {
@@ -653,7 +677,27 @@
           },
           "ext": "v0"
         },
-        "live_until": 35299
+        "live_until": 10072
+      },
+      {
+        "entry": {
+          "last_modified_ledger_seq": 0,
+          "data": {
+            "contract_data": {
+              "ext": "v0",
+              "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M",
+              "key": {
+                "ledger_key_nonce": {
+                  "nonce": "115220454072064130"
+                }
+              },
+              "durability": "temporary",
+              "val": "void"
+            }
+          },
+          "ext": "v0"
+        },
+        "live_until": 6360767
       },
       {
         "entry": {
@@ -684,7 +728,7 @@
               "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M",
               "key": {
                 "ledger_key_nonce": {
-                  "nonce": "1301173170172112462"
+                  "nonce": "1194852393571756375"
                 }
               },
               "durability": "temporary",
@@ -693,7 +737,7 @@
           },
           "ext": "v0"
         },
-        "live_until": 6451952
+        "live_until": 6360767
       },
       {
         "entry": {
@@ -704,7 +748,7 @@
               "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M",
               "key": {
                 "ledger_key_nonce": {
-                  "nonce": "3126073502131104533"
+                  "nonce": "4270020994084947596"
                 }
               },
               "durability": "temporary",
@@ -713,7 +757,7 @@
           },
           "ext": "v0"
         },
-        "live_until": 6451952
+        "live_until": 6317976
       },
       {
         "entry": {
@@ -724,7 +768,7 @@
               "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M",
               "key": {
                 "ledger_key_nonce": {
-                  "nonce": "6517132746326325848"
+                  "nonce": "4837995959683129791"
                 }
               },
               "durability": "temporary",
@@ -733,7 +777,7 @@
           },
           "ext": "v0"
         },
-        "live_until": 6451952
+        "live_until": 6317976
       },
       {
         "entry": {
@@ -753,7 +797,7 @@
           },
           "ext": "v0"
         },
-        "live_until": 6343203
+        "live_until": 6317976
       },
       {
         "entry": {

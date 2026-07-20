@@ -1,8 +1,8 @@
 #![no_std]
 
 use soroban_sdk::{
-    contract, contracterror, contractevent, contractimpl, contracttype, Address, Bytes, BytesN, Env,
-    IntoVal, Symbol, Vec,
+    contract, contracterror, contractevent, contractimpl, contracttype, Address, Bytes, BytesN,
+    Env, IntoVal, Symbol, Vec,
 };
 
 pub mod auth;
@@ -933,9 +933,7 @@ impl PurchaseManager {
         }
 
         auth::set_admin_role(&env, &new_admin);
-        env.storage()
-            .persistent()
-            .remove(&DataKey::PendingAdmin);
+        env.storage().persistent().remove(&DataKey::PendingAdmin);
 
         AdminTransferAcceptedEvent {
             new_admin: new_admin.clone(),
@@ -969,11 +967,7 @@ impl PurchaseManager {
             .persistent()
             .set(&DataKey::CreatorTier(creator.clone()), &tier);
 
-        CreatorTierUpdatedEvent {
-            creator,
-            tier,
-        }
-        .publish(&env);
+        CreatorTierUpdatedEvent { creator, tier }.publish(&env);
 
         Ok(())
     }
@@ -1014,7 +1008,6 @@ fn get_platform_config(env: &Env) -> Result<PlatformConfig, PurchaseError> {
         .get(&DataKey::PlatformConfig)
         .ok_or(PurchaseError::NotAuthorized)
 }
-
 
 fn is_asset_allowed(env: &Env, asset: &Address) -> bool {
     env.storage()
@@ -1186,6 +1179,6 @@ fn distribute_payout_shares_from_contract(
 }
 
 #[cfg(test)]
-mod test;
-#[cfg(test)]
 mod fuzz;
+#[cfg(test)]
+mod test;

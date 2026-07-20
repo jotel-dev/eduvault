@@ -3,13 +3,14 @@
 extern crate std;
 
 use crate::{
-    AssetKind, AssetQuote, MaterialRecord, MaterialStatus, PayoutShare,
-    PurchaseManager, PurchaseManagerClient,
+    AssetKind, AssetQuote, MaterialRecord, MaterialStatus, PayoutShare, PurchaseManager,
+    PurchaseManagerClient,
 };
 use proptest::prelude::*;
 use soroban_sdk::{
-    contract, contractimpl, contracttype, testutils::{Address as _, Ledger},
-    Address, Bytes, BytesN, Env, IntoVal, Symbol, Vec, vec,
+    contract, contractimpl, contracttype,
+    testutils::{Address as _, Ledger},
+    vec, Address, Bytes, BytesN, Env, IntoVal, Symbol, Vec,
 };
 use std::collections::BTreeMap;
 
@@ -29,7 +30,7 @@ impl MockRegistry {
             .persistent()
             .set(&MockRegistryKey::Material(material_id), &material);
     }
-    
+
     pub fn get_material(
         env: Env,
         material_id: BytesN<32>,
@@ -118,23 +119,45 @@ fn gen_status() -> impl Strategy<Value = MaterialStatus> {
 
 fn gen_command() -> impl Strategy<Value = Command> {
     prop_oneof![
-        (0..NUM_ASSETS, any::<bool>()).prop_map(|(asset_idx, enabled)| Command::SetAssetAllowed {
-            asset_idx,
-            enabled,
-        }),
-        (0..NUM_MATERIALS, 0..NUM_ACTORS, 0..NUM_ASSETS, 1..100_000i128, gen_status(), any::<bool>()).prop_map(
-            |(mat_idx, creator_idx, asset_idx, price, status, paused)| Command::UpdateMaterial {
-                mat_idx, creator_idx, asset_idx, price, status, paused
-            }
-        ),
-        (0..NUM_ACTORS, 0..NUM_MATERIALS, 0..NUM_ASSETS, 0..100_000i128).prop_map(
-            |(buyer_idx, mat_idx, asset_idx, expected_amount)| Command::Purchase {
-                buyer_idx, mat_idx, asset_idx, expected_amount
-            }
-        ),
+        (0..NUM_ASSETS, any::<bool>())
+            .prop_map(|(asset_idx, enabled)| Command::SetAssetAllowed { asset_idx, enabled }),
+        (
+            0..NUM_MATERIALS,
+            0..NUM_ACTORS,
+            0..NUM_ASSETS,
+            1..100_000i128,
+            gen_status(),
+            any::<bool>()
+        )
+            .prop_map(|(mat_idx, creator_idx, asset_idx, price, status, paused)| {
+                Command::UpdateMaterial {
+                    mat_idx,
+                    creator_idx,
+                    asset_idx,
+                    price,
+                    status,
+                    paused,
+                }
+            }),
+        (
+            0..NUM_ACTORS,
+            0..NUM_MATERIALS,
+            0..NUM_ASSETS,
+            0..100_000i128
+        )
+            .prop_map(|(buyer_idx, mat_idx, asset_idx, expected_amount)| {
+                Command::Purchase {
+                    buyer_idx,
+                    mat_idx,
+                    asset_idx,
+                    expected_amount,
+                }
+            }),
         (0..NUM_ACTORS, 0..10u64, 0..50_000u32).prop_map(
             |(actor_idx, purchase_id, advance_ledgers)| Command::WithdrawPayout {
-                actor_idx, purchase_id, advance_ledgers
+                actor_idx,
+                purchase_id,
+                advance_ledgers
             }
         ),
     ]
@@ -155,19 +178,19 @@ proptest! {
     fn fuzz_purchase_manager(commands in proptest::collection::vec(gen_command(), 1..20)) {
         let env = Env::default();
         env.mock_all_auths();
-        
+
         let contract_id = env.register(PurchaseManager, ());
         let client = PurchaseManagerClient::new(&env, &contract_id);
-        
+
         let mock_registry_id = env.register(MockRegistry, ());
-        
+
         let mut actors = std::vec::Vec::new();
         for _ in 0..NUM_ACTORS {
             actors.push(Address::generate(&env));
         }
         let admin = actors[0].clone();
         let treasury = actors[1].clone();
-        
+
         let mut assets = std::vec::Vec::new();
         for _ in 0..NUM_ASSETS {
             assets.push(env.register(MockAsset, ()));
@@ -193,13 +216,13 @@ proptest! {
                     let mat_id = &materials[mat_idx as usize];
                     let creator = &actors[creator_idx as usize];
                     let asset = &assets[asset_idx as usize];
-                    
+
                     let mut quotes = Vec::new(&env);
                     quotes.push_back(AssetQuote { asset: asset.clone(), amount: price });
-                    
+
                     let mut payout_shares = Vec::new(&env);
                     payout_shares.push_back(PayoutShare { recipient: creator.clone(), share_bps: 10_000 });
-                    
+
                     let record = MaterialRecord {
                         material_id: mat_id.clone(),
                         creator: creator.clone(),
@@ -208,13 +231,13 @@ proptest! {
                         quotes,
                         payout_shares,
                     };
-                    
+
                     env.invoke_contract::<()>(
                         &mock_registry_id,
                         &Symbol::new(&env, "set_material"),
                         vec![&env, mat_id.into_val(&env), record.into_val(&env)],
                     );
-                    
+
                     model.materials.insert(mat_idx, record);
                 }
                 Command::Purchase { buyer_idx, mat_idx, asset_idx, expected_amount } => {
@@ -222,11 +245,11 @@ proptest! {
                     let mat_id = &materials[mat_idx as usize];
                     let asset = &assets[asset_idx as usize];
                     let tx_id = Bytes::from_array(&env, b"tx123");
-                    
+
                     let res = client.try_purchase(buyer, mat_id, asset, &expected_amount, &tx_id);
-                    
+
                     let mut expected_ok = false;
-                    
+
                     if let Some(mat) = model.materials.get(&mat_idx) {
                         if !mat.paused && mat.status == MaterialStatus::Active {
                             if *model.assets.get(&asset_idx).unwrap_or(&false) {
@@ -238,7 +261,7 @@ proptest! {
                                         break;
                                     }
                                 }
-                                
+
                                 if !has_entitlement {
                                     if mat.quotes.get_unchecked(0).amount == expected_amount {
                                         expected_ok = true;
@@ -247,9 +270,9 @@ proptest! {
                             }
                         }
                     }
-                    
+
                     assert_eq!(res.is_ok(), expected_ok, "Purchase mismatch. Res: {:?}", res);
-                    
+
                     if expected_ok {
                         model.purchases.insert(model.purchase_nonce, (buyer_idx, mat_idx));
                         model.purchase_nonce += 1;
@@ -260,12 +283,12 @@ proptest! {
                     let actor = &actors[actor_idx as usize];
                     let current_ledger = env.ledger().sequence();
                     env.ledger().set_sequence_number(current_ledger + advance_ledgers);
-                    
+
                     let txn_id = Bytes::from_array(&env, b"12345678901234567890123456789012");
                     let res = client.try_withdraw_payouts(actor, &purchase_id, &txn_id);
-                    
+
                     let mut expected_ok = false;
-                    
+
                     if model.purchases.contains_key(&purchase_id) {
                         if !model.claimed.get(&purchase_id).unwrap_or(&false) {
                             if let Some(escrow) = client.get_escrow_record(&purchase_id) {
@@ -276,16 +299,16 @@ proptest! {
                                         break;
                                     }
                                 }
-                                
+
                                 if is_recipient && env.ledger().sequence() >= escrow.purchase_ledger + 35_000 {
                                     expected_ok = true;
                                 }
                             }
                         }
                     }
-                    
+
                     assert_eq!(res.is_ok(), expected_ok, "Withdraw mismatch. Res: {:?}", res);
-                    
+
                     if expected_ok {
                         model.claimed.insert(purchase_id, true);
                     }
@@ -300,16 +323,19 @@ proptest! {
 fn test_mutant_violation() {
     let env = Env::default();
     env.mock_all_auths();
-    
+
     let contract_id = env.register(PurchaseManager, ());
     let client = PurchaseManagerClient::new(&env, &contract_id);
-    
+
     let mock_registry_id = env.register(MockRegistry, ());
     let admin = Address::generate(&env);
     let treasury = Address::generate(&env);
-    
+
     // Initializing twice should fail (invariant). If we try to init twice and assert it succeeds, it simulates a mutant where the check is missing.
     client.initialize(&admin, &mock_registry_id, &treasury, &500);
     let res = client.try_initialize(&admin, &mock_registry_id, &treasury, &500);
-    assert!(res.is_ok(), "Expected success but got error! (Mutant caught)");
+    assert!(
+        res.is_ok(),
+        "Expected success but got error! (Mutant caught)"
+    );
 }
