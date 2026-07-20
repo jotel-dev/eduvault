@@ -170,6 +170,15 @@ The canonical Soroban contract boundary and event model are documented in [`docs
 - Separate issuer and distribution responsibilities if asset issuance is introduced.
 - Never store private keys in the web application.
 
+## 7. Privacy & Data Lifecycle (GDPR/CCPA)
+
+EduVault implements a rigorous privacy lifecycle to balance off-chain privacy rights with on-chain immutability:
+- **Data Inventory & Purpose**: Described in `src/lib/privacy/inventory.js`.
+- **Export**: Users can export their complete, machine-readable data profile via `/api/privacy/export`.
+- **Verifiable Erasure**: Users can invoke `/api/privacy/delete` to hard-delete or anonymize their PII from MongoDB (Users, Analytics, Materials) and unpin content from IPFS (Pinata).
+- **On-chain Immutability**: Financial records and entitlements on Soroban cannot be deleted. However, during account erasure, we pseudonymize these records in our indexing layer by destroying the linkage to the user's wallet address.
+- **Legal Holds**: The system supports "Legal Holds" that prevent deletion of records when required by law or ongoing disputes.
+
 ## 7. Deployment Direction
 
 ### Current
