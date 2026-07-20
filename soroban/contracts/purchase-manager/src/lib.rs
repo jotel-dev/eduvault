@@ -809,7 +809,6 @@ impl PurchaseManager {
         admin: Address,
         new_platform_fee_bps: u32,
     ) -> Result<(), PurchaseError> {
-        admin.require_auth();
         auth::require_admin(&env, &admin)?;
 
         if new_platform_fee_bps > MAX_PLATFORM_FEE_BPS {
@@ -901,7 +900,6 @@ impl PurchaseManager {
         admin: Address,
         new_admin: Address,
     ) -> Result<(), PurchaseError> {
-        admin.require_auth();
         auth::require_admin(&env, &admin)?;
 
         env.storage()
@@ -965,7 +963,6 @@ impl PurchaseManager {
         creator: Address,
         tier: CreatorTier,
     ) -> Result<(), PurchaseError> {
-        admin.require_auth();
         auth::require_admin(&env, &admin)?;
 
         env.storage()

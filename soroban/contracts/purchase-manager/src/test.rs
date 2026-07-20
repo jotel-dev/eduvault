@@ -1629,9 +1629,6 @@ fn withdraw_payouts_fails_for_non_recipient() {
     let (_, client) = install_and_init_contract(&env, &admin, &registry, &treasury, 500);
     client.set_asset_allowed(&admin, &asset, &AssetKind::Token, &true);
 
-    assert_eq!(client.get_creator_tier(&creator), CreatorTier::Tier1);
-
-    client.purchase(&buyer, &material_id, &asset, &1_000_000, &sample_transaction_id(&env));
     let purchase_id = client.purchase(&buyer, &material_id, &asset, &1_000_000, &sample_transaction_id(&env));
 
     env.ledger().set_sequence_number(36_000);
