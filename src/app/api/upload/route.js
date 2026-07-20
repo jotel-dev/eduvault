@@ -355,11 +355,6 @@ export async function POST(request) {
         // 8️⃣ Return the CID as storageKey and also include URLs for backwards-compatibility
         return NextResponse.json({
           success: true,
-          storageKey: results.storageKey,
-          fileUrl: results.fileUrl,
-        // 8️⃣ Return the CID as storageKey
-        return NextResponse.json({
-          success: true,
           storageKey: uploadedFile.cid,
           image: results.imgUrl || '',
           metadata: results.metadataUrl,

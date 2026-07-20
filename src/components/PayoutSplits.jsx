@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { FaPlus, FaTrash } from "react-icons/fa";
 
 export default function PayoutSplits({ onChange, initialSplits = [] }) {
@@ -11,10 +11,19 @@ export default function PayoutSplits({ onChange, initialSplits = [] }) {
   );
   const [errors, setErrors] = useState({});
 
-  useEffect(() => {
-    validateSplits();
-  }, [splits]);
+  const validateWalletAddress = (address) => {
+    // Stellar public key validation (starts with G, 56 characters)
+    const stellarRegex = /^G[A-Z0-9]{55}$/;
+    return stellarRegex.test(address);
+  };
 
+  const validateSplits = useCallback(() => {
+    const newErrors = {};
+    let totalPercentage = 0;
+
+    splits.forEach((split, index) => {
+      // Validate wallet address
+      if (split.address && !validateWalletAddress(split.address)) {
   const validateWalletAddress = (address) => {
     // Stellar public key validation (starts with G, 56 characters)
     const stellarRegex = /^G[A-Z0-9]{55}$/;
