@@ -83,7 +83,7 @@ export default function UploadWizard() {
   const createMaterialMutation = useCreateMaterial();
 
   const chainMismatch = address && chainId && !isUploadChain(chainId);
-  const chainMismatch = false;
+
 
   useEffect(() => {
     async function loadTaxonomy() {

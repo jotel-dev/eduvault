@@ -24,19 +24,6 @@ export default function PayoutSplits({ onChange, initialSplits = [] }) {
     splits.forEach((split, index) => {
       // Validate wallet address
       if (split.address && !validateWalletAddress(split.address)) {
-  const validateWalletAddress = (address) => {
-    // Stellar public key validation (starts with G, 56 characters)
-    const stellarRegex = /^G[A-Z0-9]{55}$/;
-    return stellarRegex.test(address);
-  };
-
-  const validateSplits = () => {
-    const newErrors = {};
-    let totalPercentage = 0;
-
-    splits.forEach((split, index) => {
-      // Validate wallet address
-      if (split.address && !validateWalletAddress(split.address)) {
         newErrors[`address_${index}`] = "Invalid Stellar wallet address";
       }
 
@@ -72,7 +59,11 @@ export default function PayoutSplits({ onChange, initialSplits = [] }) {
     onChange(isValid ? splits : null, isValid);
 
     return isValid;
-  };
+  }, [splits, onChange]);
+
+  useEffect(() => {
+    validateSplits();
+  }, [validateSplits]);
 
   const handleAddSplit = () => {
     const currentTotal = splits.reduce(
