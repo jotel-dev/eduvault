@@ -14,15 +14,19 @@ const mockSubmit = vi.fn();
 const mockLoadAccount = vi.fn();
 const mockFeeStats = vi.fn();
 
-vi.mock('@stellar/stellar-sdk', () => ({
-  Horizon: {
-    Server: vi.fn().mockImplementation(() => ({
-      submitTransaction: mockSubmit,
-      loadAccount: mockLoadAccount,
-      feeStats: mockFeeStats,
-    })),
-  },
-}));
+vi.mock('@stellar/stellar-sdk', () => {
+  return {
+    Horizon: {
+      Server: class {
+        constructor() {
+          this.submitTransaction = mockSubmit;
+          this.loadAccount = mockLoadAccount;
+          this.feeStats = mockFeeStats;
+        }
+      },
+    },
+  };
+});
 
 import { withFailover, loadAccount, submitTransaction, fetchFeeStats, getConfiguredEndpoints, checkBuyerTrustline } from '../horizonClient';
 
