@@ -241,16 +241,17 @@ export async function POST(request) {
               { status: 500 }
             )
           }
-        const uploadedFile = await pinata.upload.public.file(file)
-        const fileUrl = await pinata.gateways.public.convert(uploadedFile.cid)
-        results.fileUrl = fileUrl
+          }
 
-        // 5️⃣ Upload thumbnail (if provided)
-        if (image) {
-          const fileThumb = await pinata.upload.public.file(image)
-          const imgUrl = await pinata.gateways.public.convert(fileThumb.cid)
-          results.imgUrl = imgUrl
-        }
+
+
+
+
+
+
+
+
+
 
         // 6️⃣ Prepare the rest of the form data as JSON
         const otherFields = {}
@@ -342,8 +343,8 @@ export async function POST(request) {
           )
         }
         const uploadedJson = await pinata.upload.public.json(metadataJSON)
-        const jsonUrl = await pinata.gateways.public.convert(uploadedJson.cid)
-        results.metadataUrl = jsonUrl
+
+
 
         auditLog({
           event: 'upload_complete',
@@ -355,12 +356,8 @@ export async function POST(request) {
         // 8️⃣ Return the CID as storageKey and also include URLs for backwards-compatibility
         return NextResponse.json({
           success: true,
-          storageKey: results.storageKey,
+          storageKey: results.storageKey || (uploadedFile && uploadedFile.cid),
           fileUrl: results.fileUrl,
-        // 8️⃣ Return the CID as storageKey
-        return NextResponse.json({
-          success: true,
-          storageKey: uploadedFile.cid,
           image: results.imgUrl || '',
           metadata: results.metadataUrl,
         })
