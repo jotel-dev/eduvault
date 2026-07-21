@@ -51,6 +51,7 @@ export async function POST(req) {
         const discountPercent = discountResult.discountAmountPercent || 0;
         finalBaseAmount = basePrice * (1 - discountPercent / 100);
       }
+    }
     const buyerAddress = user.walletAddress || user.address || user.id;
 
     // Verify buyer holds an active trustline for the payment asset

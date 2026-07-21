@@ -1,9 +1,77 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+// Mock getDb before anything else
+vi.mock('@/lib/mongodb', () => {
+  const store = {
+    moderation_cases: [],
+    moderation_reports: [],
+    materials: []
+  };
+
+  const createCollectionMock = (name) => {
+    return {
+      find: (query) => {
+        let res = store[name];
+        if (query.materialId) res = res.filter(x => x.materialId === query.materialId);
+        return {
+          toArray: async () => res
+        };
+      },
+      findOne: async (query) => {
+        return store[name].find(x => {
+          for (const key in query) {
+            if (typeof query[key] === 'object' && query[key].$ne) {
+               if (x[key] === query[key].$ne) return false;
+            } else if (typeof query[key] === 'object' && query[key].$in) {
+               if (!query[key].$in.includes(x[key])) return false;
+            } else {
+               if (x[key] !== query[key]) return false;
+            }
+          }
+          return true;
+        }) || null;
+      },
+      insertOne: async (doc) => {
+        store[name].push(doc);
+        return { insertedId: doc._id };
+      },
+      updateOne: async (query, update) => {
+        const item = await createCollectionMock(name).findOne(query);
+        if (item) {
+          if (update.$set) Object.assign(item, update.$set);
+          if (update.$unset) {
+            for (const key in update.$unset) delete item[key];
+          }
+          if (update.$push) {
+            for (const key in update.$push) {
+              item[key] = item[key] || [];
+              item[key].push(update.$push[key]);
+            }
+          }
+        }
+      },
+      updateMany: async (query, update) => {
+        const items = store[name].filter(x => query._id.$in.includes(x._id));
+        for (const item of items) {
+          if (update.$set) Object.assign(item, update.$set);
+        }
+      },
+      deleteMany: async () => {
+        store[name] = [];
+      }
+    };
+  };
+
+  return {
+    getDb: async () => ({
+      collection: (name) => createCollectionMock(name)
+    })
+  };
+});
+
 import { getDb } from '@/lib/mongodb';
 import { createReport, proposeSanction, approveSanction, fileAppeal, resolveAppeal } from '@/lib/moderation/cases';
 import crypto from 'crypto';
 
-// Setup database connection and cleanup
 let db;
 
 beforeEach(async () => {
@@ -11,14 +79,6 @@ beforeEach(async () => {
   await db.collection('moderation_cases').deleteMany({});
   await db.collection('moderation_reports').deleteMany({});
   await db.collection('materials').deleteMany({});
-});
-
-afterEach(async () => {
-  if (db) {
-    await db.collection('moderation_cases').deleteMany({});
-    await db.collection('moderation_reports').deleteMany({});
-    await db.collection('materials').deleteMany({});
-  }
 });
 
 describe('Moderation System', () => {
